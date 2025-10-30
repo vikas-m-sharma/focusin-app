@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 
 export default function Signup() {
@@ -11,7 +12,7 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(""); // Clear any old messages
+    setMessage("");
 
     try {
       const res = await axios.post("http://127.0.0.1:8000/api/signup/", {
@@ -27,15 +28,30 @@ export default function Signup() {
       setTimeout(() => navigate("/login"), 1500);
     } catch (error) {
       console.error("❌ Signup error:", error.response?.data || error.message);
-
       if (error.response && error.response.data?.error) {
-        // Show actual backend error
         setMessage(error.response.data.error + " ❌");
       } else {
-        // Generic message if backend doesn’t send error
         setMessage("Something went wrong ❌");
       }
     }
+  };
+
+  // 🌐 Google Sign-Up
+  const handleGoogleSuccess = async (credentialResponse) => {
+    const token = credentialResponse?.credential;
+    try {
+      const res = await axios.post("http://127.0.0.1:8000/api/google-login/", { token });
+      console.log("✅ Google Signup Success:", res.data);
+      setMessage("Google sign-up successful ✅");
+      setTimeout(() => navigate("/timetable"), 1000);
+    } catch (err) {
+      console.error("❌ Google signup error:", err);
+      setMessage("Google sign-up failed ❌");
+    }
+  };
+
+  const handleGoogleError = () => {
+    setMessage("Google sign-up failed ❌");
   };
 
   return (
@@ -94,6 +110,15 @@ export default function Signup() {
           </button>
         </form>
 
+        {/* Divider */}
+        <div className="my-4 text-gray-500 text-sm">or continue with</div>
+
+        {/* 🟦 Google Login */}
+        <div className="flex justify-center">
+          <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+        </div>
+
+        {/* Feedback Message */}
         {message && (
           <p
             className={`text-sm mt-4 ${

@@ -1,77 +1,95 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
-  // ✅ Email-password login handler
-  const handleLogin = async (e) => {
+  // ---- Email/Password Login ----
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage("");
+
     try {
-      const res = await axios.post("http://127.0.0.1:8000/api/login/", {
+      const response = await axios.post("http://127.0.0.1:8000/api/login/", {
         email,
         password,
       });
-      setMessage("Login successful ✅");
-      console.log("User data:", res.data);
+
+      setMessage(response.data.message);
+      console.log("✅ Logged in user:", response.data.user);
+
+      // ✅ Store user ID for later (used in CreateTask / Timetable)
+      localStorage.setItem("user_id", response.data.user.id);
+      localStorage.setItem("user_name", response.data.user.name);
+      localStorage.setItem("user_email", response.data.user.email);
+
+      // ✅ Redirect to timetable after login
+      setTimeout(() => navigate("/timetable"), 1000);
     } catch (error) {
-      console.error(error);
-      setMessage("Login failed ");
+      console.error("Login error:", error);
+      setMessage(error.response?.data?.error || "Login failed ❌");
     }
   };
 
-  // ✅ Google login success handler
+  // ---- Google Sign-In ----
   const handleGoogleSuccess = async (credentialResponse) => {
     const token = credentialResponse?.credential;
     console.log("Google token:", token);
 
     try {
-      // Send token to backend for verification (Django)
-      // Uncomment when backend route is ready:
-      // await axios.post("http://127.0.0.1:8000/api/google-login/", { token });
+      const res = await axios.post("http://127.0.0.1:8000/api/google-login/", { token });
+      console.log("✅ Google login success:", res.data);
 
-      setMessage("Google sign-in successful ✅ (check console)");
-    } catch (error) {
-      console.error("Google sign-in error:", error);
-      setMessage("Google sign-in failed ");
+      // ✅ Save Google user info temporarily
+      localStorage.setItem("user_email", res.data.email);
+      localStorage.setItem("user_name", res.data.name);
+
+      setMessage("Google sign-in successful ✅");
+      setTimeout(() => navigate("/timetable"), 1000);
+    } catch (err) {
+      console.error("Google login error:", err);
+      setMessage("Google sign-in failed ❌");
     }
   };
 
-  // ✅ Google login error handler
   const handleGoogleError = () => {
-    setMessage("Google sign-in failed ");
+    setMessage("Google sign-in failed ❌");
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-100 to-blue-200">
-      <div className="bg-white p-8 rounded-3xl shadow-lg w-full max-w-md">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-          Sign In
-        </h2>
+    <div className="flex items-center justify-center min-h-screen bg-[#f5f8ff]">
+      <div className="bg-white p-10 rounded-3xl shadow-xl w-full max-w-md text-center">
+        <h2 className="text-3xl font-bold text-gray-800 mb-6">Sign In</h2>
 
-        {/* Email-password form */}
-        <form onSubmit={handleLogin} className="space-y-5">
-          <div className="text-left">
-            <label className="block text-gray-600 mb-1">Email</label>
+        {/* ---- Email/Password Login Form ---- */}
+        <form onSubmit={handleSubmit}>
+          <div className="text-left mb-4">
+            <label className="block text-gray-700 text-sm font-medium mb-2">
+              Email
+            </label>
             <input
               type="email"
+              className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
               placeholder="Enter your email"
-              className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
 
-          <div className="text-left">
-            <label className="block text-gray-600 mb-1">Password</label>
+          <div className="text-left mb-6">
+            <label className="block text-gray-700 text-sm font-medium mb-2">
+              Password
+            </label>
             <input
               type="password"
+              className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
               placeholder="Enter your password"
-              className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -80,31 +98,36 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition"
+            className="w-full bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition"
           >
             Sign In
           </button>
         </form>
 
-        <div className="my-6 text-center text-gray-500">or</div>
+        <div className="my-4 text-gray-500 text-sm">or</div>
 
-        {/* Google Login button */}
-        <div className="flex justify-center">
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleError}
-          />
+        <div className="my-4 flex justify-center">
+          <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
         </div>
 
         {message && (
-          <p className="mt-6 text-center text-sm text-red-500">{message}</p>
+          <p
+            className={`text-sm mt-4 ${
+              message.includes("✅") ? "text-green-600" : "text-red-500"
+            }`}
+          >
+            {message}
+          </p>
         )}
 
-        <p className="mt-8 text-center text-gray-600">
+        <p className="text-gray-600 mt-6">
           Don’t have an account?{" "}
-          <a href="/signup" className="text-indigo-600 hover:underline">
+          <span
+            onClick={() => navigate("/signup")}
+            className="text-blue-600 cursor-pointer hover:underline"
+          >
             Sign up
-          </a>
+          </span>
         </p>
       </div>
     </div>

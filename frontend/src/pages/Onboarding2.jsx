@@ -5,39 +5,36 @@ export default function Onboarding2() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-[#f5f8ff]">
-      <div className="bg-white p-10 rounded-3xl shadow-xl w-full max-w-lg text-center">
-        <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-            <span className="text-4xl text-green-600 font-bold">⏰</span>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#f5f8ff] px-6 text-center">
+      <div className="bg-white shadow-xl rounded-3xl p-10 w-full max-w-md">
+        <div className="mb-8">
+          <div className="mx-auto bg-green-100 text-green-600 rounded-full w-16 h-16 flex items-center justify-center text-3xl">
+            📅
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-          Smart Timetable & Voice Reminders
-        </h2>
-        <p className="text-gray-600 mb-6">
-          Never miss a study session with our intelligent scheduling and
-          personalized AI voice reminders.
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">
+          Plan Your Study Schedule
+        </h1>
+        <p className="text-gray-600 mb-8">
+          Set your subjects, track progress, and manage your time with smart AI reminders.
         </p>
 
-        <div className="flex justify-center space-x-2 mb-6">
-          <span className="h-3 w-3 bg-gray-300 rounded-full"></span>
-          <span className="h-3 w-3 bg-blue-600 rounded-full"></span>
-          <span className="h-3 w-3 bg-gray-300 rounded-full"></span>
+        <div className="flex justify-center gap-2 mb-6">
+          <div className="w-3 h-3 rounded-full bg-gray-300"></div>
+          <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+          <div className="w-3 h-3 rounded-full bg-gray-300"></div>
         </div>
 
         <button
           onClick={() => navigate("/onboarding3")}
-          className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition"
+          className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition"
         >
           Continue →
         </button>
-
-        <p className="text-gray-500 mt-6 text-sm">
-          FocusIn © 2025 – All rights reserved
-        </p>
       </div>
+
+      <p className="text-sm text-gray-500 mt-4">FocusIn © 2025 – All rights reserved</p>
     </div>
   );
 }
